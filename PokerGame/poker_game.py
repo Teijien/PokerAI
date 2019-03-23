@@ -449,5 +449,5 @@ def test():
 
     print("All tests pass!")
 
-#main()
-test()
+main()
+#test()

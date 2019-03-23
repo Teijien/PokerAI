@@ -5,7 +5,7 @@
     <ProjectGuid>9210d3ec-ee34-418f-bb2c-c51e52b9ba24</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>Poker (1).py</StartupFile>
+    <StartupFile>poker_game.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -29,7 +29,6 @@
     <Compile Include="mcts_implement.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Poker %281%29.py" />
     <Compile Include="poker_game.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
