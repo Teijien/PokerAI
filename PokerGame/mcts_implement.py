@@ -67,9 +67,9 @@ def think(game, state):
 
         Returns the actions to be taken.
     """
-    print(game.display(state, None))
+    print(game.display(state))
     identity_of_bot = game.current_player(state)
-    root_node = MCTSNode(parent=None, parent_action=None, action_list=gArithmeticError.legal_actions(state))
+    root_node = MCTSNode(parent=None, parent_action=None, action_list=game.legal_actions(state))
     
     for step in range(num_nodes):
         sampled_game = state    # Copy the game for sampling a playthrough
@@ -87,7 +87,7 @@ def think(game, state):
         result = points[identity_of_bot]
         backpropagate(node, result)
 
-    choice = sorted(rroot_node.childnum_nodes.values(),
+    choice = sorted(root_node.child_nodes.values(),
                    key = lambda c: c.visits)[-1].parent_action
     print("MCTS bot ", identity_of_bot, " picking ", choice)
 
