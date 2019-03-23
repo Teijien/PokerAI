@@ -160,7 +160,7 @@ class Poker (object):
         count+=1
         h += 2**(card.rank)
       else:
-        k = card.rank/2
+        k += card.rank/10
     if count==4:
       flag=True
       print('Four of a Kind')
@@ -321,11 +321,10 @@ class FiveCardDrawPoker(Poker):
         self.upper_limit = blinds * 2       # Upper betting limit
         self.buy_in = buy_in
 
-    def display(self, state, action):
-        next_state = self.next_state(state, action)
+    def display(self, state):
         to_show = ""
         for player in range(1, 3):
-            player_state = self.get_player(next_state, player)
+            player_state = self.get_player(state, player)
             player_state = (int(player_state[0]), int(player_state[1]))
             to_show = to_show + "Player " + str(player) + ": " + str(player_state) + "\n"
         
@@ -590,8 +589,8 @@ def test():
     new_state = game.next_state(newer_state, call_action)
     assert new_state == ((46, 4), (46, 4), (3, False, True, 1))
 
-    display = game.display(newer_state, "raise")
-    assert display == "Player 1: (46, 4)\nPlayer 2: (44, 6)\n"
+    display = game.display(newer_state)
+    assert display == "Player 1: (46, 4)\nPlayer 2: (48, 2)\n"
 
     ended = game.is_ended(newer_state)
     assert ended == False
