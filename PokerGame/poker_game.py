@@ -89,9 +89,10 @@ class Poker(object):
         for i in range (len (self.hands) ):
             sortedHand = sorted (self.hands[i], reverse = True)
             hand = ''
-            for card in sortedHand:
-                hand = hand + str(card) + ' '
-            print ('Hand ' + str(i + 1) + ': ' + hand + " score: " + str(self.point(sortedHand)))
+            if i == 0:
+                for card in sortedHand:
+                    hand = hand + str(card) + ' '
+                print ('Hand ' + str(i + 1) + ': ' + hand + " score: " + str(self.point(sortedHand)))
 
     def point(self,hand):                         #point()function to calculate partial score
         sortedHand=sorted(hand,reverse=True)
@@ -295,14 +296,24 @@ class FiveCardDrawPoker(Poker):
         self.upper_limit = blinds * 2       # Upper betting limit
         self.buy_in = buy_in
 
+    def display(self, state, action):
+        next_state = self.next_state(state, action)
+        to_show = ""
+        for player in range(1, 3):
+            player_state = self.get_player(next_state, player)
+            player_state = (int(player_state[0]), int(player_state[1]))
+            to_show = to_show + "Player " + str(player) + ": " + str(player_state) + "\n"
+        
+        return to_show
+
     def starting_state(self):
         """ Defines the starting pot for each player.
             
             Returns a tuple consisting of each player's buy-in and chips bet, as
-            well as if it's Turn 0, if the bets are uneven, and the player to
-            take their turn.
+            well as if it's Turn 0, if the bets are uneven, the player to
+            take their turn, and if the betting phase is ended.
         """
-        return (self.buy_in, 0), (self.buy_in, 0), (0, False, 1)
+        return (self.buy_in, 0), (self.buy_in, 0), (0, False, False, 1)
 
     def get_player(self, state, player):
         return state[player - 1]
@@ -313,7 +324,7 @@ class FiveCardDrawPoker(Poker):
     def get_player_bet(self, state, player):
         return self.get_player(state, player)[1]
 
-    def get_current_player(self, state):
+    def current_player(self, state):
         return self.get_player(state, 3)[-1]
 
     def is_uneven(self, state):
@@ -327,11 +338,18 @@ class FiveCardDrawPoker(Poker):
         else:
             actions = ["bet", "check", "fold"]
 
-        current_player = self.get_current_player(state)
+        current_player = self.current_player(state)
         if self.get_player_chips(state, current_player) < self.lower_limit:
             actions.pop(0)
 
         return actions
+
+    def is_legal(self, state, action):
+        legal_actions = self.legal_actions(state)
+        if action not in legal_actions:
+            return False
+
+        return True
 
     def collect_blinds(self, state):
         """ Updates the state after collecting blinds. Current turn must be
@@ -356,7 +374,8 @@ class FiveCardDrawPoker(Poker):
 
         turn_one = stats[0] + 1
         is_uneven = True
-        stats = (turn_one, is_uneven, stats[-1])
+        is_ended = False
+        stats = (turn_one, is_uneven, is_ended, stats[-1])
 
         return player_one, player_two, stats
 
@@ -371,14 +390,113 @@ class FiveCardDrawPoker(Poker):
 
     # NEEDS TO BE IMPLEMENTED #
     def next_state(self, state, action):
+        """ Updates the state with some action """
+        player = self.current_player(state)
+        chips = self.get_player_chips(state, player)
+        bet = self.get_player_bet(state, player)
+        new_state = ()
 
-        pass
+        def bet_action():
+            player_state = self.get_player(state, player)
+            new_state = (player_state[0] - self.lower_limit, player_state[1] + self.lower_limit)
+
+            stats = self.get_player(state, 3)
+            new_stats = (stats[0] + 1, True, False, 3 - stats[3])
+
+            if player == 1:
+                return (new_state, state[1], new_stats)
+            else:
+                return (state[0], new_state, new_stats)
+
+        def raise_action():
+            player_state = self.get_player(state, player)
+
+            bet = self.upper_limit
+            if player_state[1] == 1:
+                bet -= 1
+
+            new_state = (player_state[0] - bet, player_state[1] + bet)
+
+            stats = self.get_player(state, 3)
+            new_stats = (stats[0] + 1, True, False, 3 - stats[3])
+
+            if player == 1:
+                return (new_state, state[1], new_stats)
+            else:
+                return (state[0], new_state, new_stats)
+
+        def check_action():
+            stats = self.get_player(state, 3)
+            new_stats = (stats[0] + 1, False, True, 3 - stats[3])
+
+            return (state[0], state[1], new_stats)
+
+        def call_action():
+            player_state = self.get_player(state, player)
+            opponent_state = self.get_player(state, 3 - player)
+            difference = abs(player_state[1] - opponent_state[1])
+            new_state = (player_state[0] - difference, player_state[1] + difference)
+
+            stats = self.get_player(state, 3)
+            new_stats = ()
+            if self.get_player(state, 3)[0] == 1:
+                new_stats = (stats[0] + 1, False, False, 3 - stats[3])
+            else:
+                new_stats = (stats[0] + 1, False, True, 3 - stats[3])
+
+            if player == 1:
+                return (new_state, state[1], new_stats)
+            if player == 2:
+                return (state[0], new_state, new_stats)
+
+            stats = self.get_player(state, 3)
+            new_stats = (stats[0] + 1, False, 3 - stats[3])
+
+        def fold_action():
+            stats = self.get_player(state, 3)
+            new_stats = (stats[0] + 1, False, True, 3 - player)
+
+            return (state[0], state[1], new_stats)
+
+        if action == "bet":
+            new_state = bet_action()
+        elif action == "raise":
+            new_state = raise_action()
+        elif action == "check":
+            new_state = check_action()
+        elif action == "call":
+            new_state = call_action()
+        elif action == "fold":
+            new_state = fold_action()
+        else:
+            new_state = state
+
+        return new_state
+
+    def is_ended(self, state):
+        stats = self.get_player(state, 3)
+        return stats[2]
+
+    def points_values(self, state):
+        player1 = self.get_player_bet(state, 1)
+        player2 = self.get_player_bet(state, 2)
+        
+        maxpoint = max(self.tlist)
+        maxindex = self.tlist.index(maxpoint)
+
+        if maxindex + 1 == 1:
+            return { 1: player1, 2: -player2 }
+        elif maxindex + 1 == 2:
+            return { 1: -player1, 2: player2 }
+        else:
+            exit("Invalid player!")
 
 
 def main ():
   #numHands = eval (input ('Enter number of hands to play: '))
   #while (numHands < 2 or numHands > 6):
-  numHands = eval( input ('Enter number of hands to play: ') )
+  #numHands = eval( input ('Enter number of hands to play: ') )
+  numHands = 2
   game = Poker (numHands)
   game.play()
 
@@ -397,57 +515,66 @@ def main ():
 def test():
     game = FiveCardDrawPoker(2, 50)
     state = game.starting_state()
-    assert state == ((50, 0), (50, 0), (0, False, 1)), "starting_state() fail!"
+    assert state == ((50, 0), (50, 0), (0, False, False, 1)), "starting_state() fail!"
     print("starting_state() pass!")
 
     uneven_state = game.collect_blinds(state)
-    assert uneven_state == ((49, 1), (48, 2), (1, True, 1)), "collect_blinds() fail!"
+    assert uneven_state == ((49, 1), (48, 2), (1, True, False, 1)), "collect_blinds() fail!"
     print("collect_blinds() pass!")
 
     legal_actions = game.legal_actions(uneven_state)
     assert legal_actions == ["raise", "call", "fold"]
 
-    even_state = ((48, 2), (48, 2), (2, False, 2))
+    even_state = ((48, 2), (48, 2), (2, False, False, 2))
     legal_actions = game.legal_actions(even_state)
     assert legal_actions == ["bet", "check", "fold"]
 
-    few_chips_state = ((1, 0), (1, 0), (1, False, 1))
+    few_chips_state = ((1, 0), (1, 0), (1, False, False, 1))
     legal_actions = game.legal_actions(few_chips_state)
     assert legal_actions == ["check", "fold"]
 
-    input = game.get_action(uneven_state)
+    #input = game.get_action(uneven_state)
     #assert input in ["raise", "call", "fold"], "get_action() for uneven bets fail!"
 
-    input = game.get_action(even_state)
+    #input = game.get_action(even_state)
     #assert input in ["bet", "check", "fold"], "get_action() for even bets fail!"
 
     action = "bet"
     new_state = game.next_state(even_state, action)
-    assert new_state == ((48, 2), (46, 4), (3, True, 1))
+    assert new_state == ((48, 2), (46, 4), (3, True, False, 1))
 
     action = "check"
     new_state = game.next_state(even_state, action)
-    assert new_state == ((48, 2), (48, 2), (3, False, 1))
+    assert new_state == ((48, 2), (48, 2), (3, False, True, 1))
 
     action = "fold"
     new_state = game.next_state(even_state, action)
-    assert new_state == ((52, 0), (48, 0), (0, False, 1))
+    assert new_state == ((48, 2), (48, 2), (3, False, True, 1))
 
     raise_action = "raise"
     newer_state = game.next_state(uneven_state, raise_action)
-    assert new_state == ((46, 4), (48, 2), (2, True, 2))
+    assert newer_state == ((46, 4), (48, 2), (2, True, False, 2))
 
     call_action = "call"
     new_state = game.next_state(uneven_state, call_action)
-    assert new_state == ((48, 2), (48, 2), (2, False, 2))
+    assert new_state == ((48, 2), (48, 2), (2, False, False, 2))
 
     new_state = game.next_state(newer_state, raise_action)
-    assert new_state == ((46, 4), (44, 6), (3, True, 1))
+    assert new_state == ((46, 4), (44, 6), (3, True, False, 1))
 
     new_state = game.next_state(newer_state, call_action)
-    assert new_state == ((46, 4), (46, 4), (3, False, 1))
+    assert new_state == ((46, 4), (46, 4), (3, False, True, 1))
+
+    display = game.display(newer_state, "raise")
+    assert display == "Player 1: (46, 4)\nPlayer 2: (44, 6)\n"
+
+    ended = game.is_ended(newer_state)
+    assert ended == False
+
+    ended = game.is_ended(new_state)
+    assert ended == True
 
     print("All tests pass!")
 
-main()
-#test()
+#main()
+test()

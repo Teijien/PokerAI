@@ -1,23 +1,23 @@
 from mcts_implement import think
-from poker_game import main, Poker
+from poker_game import main, FiveCardDrawPoker
 from sys import argv
 
-def get_human_input(game, bet1, bet2):
+def get_human_input(game, state):
     move = None
     #action = game.bet_action(move)
-    if bet1 == bet2:
+    if not game.is_uneven(state):
         move = input("Bet, Check, or Fold? (q to quit)").strip()
-    elif bet1 < bet2:
+    elif game.is_uneven(state):
         move = input("Raise, Call, or Fold? (q to quit)").strip()
     else:
         raise ValueError(
             "Betting player shouldn't have more in pot than opponent"
             )
 
-    if action == "q":
+    if move == "q":
        exit(2)
-    elif game.is_legal(state, action):
-        return action
+    elif game.is_legal(state, move):
+        return move
     else:
         return get_human_input(game, bet1, bet2)
 
@@ -25,8 +25,16 @@ players = dict(
     human = get_human_input,
     mcts_bot = think
     )
-game = Poker(2)
+numHands = 2
+game = FiveCardDrawPoker(numHands, 50)
 state0 = game.starting_state()
+state0 = game.collect_blinds(state0)
+game.play()
+
+print('\n')
+print("Hand " + str(1) + ": ", end = "")
+game.isRoyal(game.hands[0])
+print('\n')
 
 if len(argv) != 3:
     print("Need two player arguments")
@@ -42,21 +50,27 @@ if p2 not in players:
     exit(1)
 
 player1 = players[p1]
-players2 = players[p2]
+player2 = players[p2]
 state = state0
 last_action = None
 current_player = player1
 
-while not game.is_ended(next_state):
+while not game.is_ended(state):
     print(game.display(state, last_action))
     print("Player " + str(game.current_player(state)))
-    last_action = current_player(board, state)
-    state = game.next_state(next_state, last_action)
+    last_action = current_player(game, state)
+    state = game.next_state(state, last_action)
 
     if current_player == player2:
         current_player = player1
     else:
         current_player = player2
 
-print("Finished!")
+print("Finished!\n")
+sortedHand = sorted(game.hands[1], reverse = True)
+hand = ''
+for card in sortedHand:
+    hand = hand + str(card) + ' '
+print('Hand ' + str(2) + ': ' + hand + ' score: ' + str(game.point(sortedHand)) + '\n')
+game.isRoyal(game.hands[1])
 print(game.points_values(state))

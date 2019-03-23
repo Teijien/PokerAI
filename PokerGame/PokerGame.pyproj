@@ -5,13 +5,16 @@
     <ProjectGuid>9210d3ec-ee34-418f-bb2c-c51e52b9ba24</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>poker_game.py</StartupFile>
+    <StartupFile>main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>PokerGame</Name>
     <RootNamespace>PokerGame</RootNamespace>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <CommandLineArguments>human human</CommandLineArguments>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
