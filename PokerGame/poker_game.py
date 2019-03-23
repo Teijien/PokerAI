@@ -376,10 +376,9 @@ class FiveCardDrawPoker(Poker):
 
 
 def main ():
-  #numHands = eval (input ('Enter number of hands to play: '))
-  numHands = 2
-  #while (numHands < 2 or numHands > 6):
-  #  numHands = eval( input ('Enter number of hands to play: ') )
+  numHands = eval (input ('Enter number of hands to play: '))
+  while (numHands < 2 or numHands > 6):
+    numHands = eval( input ('Enter number of hands to play: ') )
   game = Poker (numHands)
   game.play()
 
