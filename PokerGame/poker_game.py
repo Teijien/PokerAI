@@ -96,9 +96,10 @@ class Poker (object):
     for i in range (len (self.hands) ):
       sortedHand = sorted (self.hands[i], reverse = True)
       hand = ''
-      for card in sortedHand:
-        hand = hand + str(card) + ' '
-      print ('Hand ' + str(i + 1) + ': ' + hand)
+      if i == 0:
+        for card in sortedHand:
+          hand = hand + str(card) + ' '
+        print ('Hand ' + str(i + 1) + ': ' + hand + ' score: ' + str(self.point(sortedHand)))
 
   def point(self,hand):                         #point()function to calculate partial score
     sortedHand=sorted(hand,reverse=True)

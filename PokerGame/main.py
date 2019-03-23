@@ -19,7 +19,8 @@ def get_human_input(game, state):
     elif game.is_legal(state, move):
         return move
     else:
-        return get_human_input(game, bet1, bet2)
+        print("Not a legal move!")
+        return get_human_input(game, state)
 
 players = dict(
     human = get_human_input,
@@ -31,8 +32,7 @@ state0 = game.starting_state()
 state0 = game.collect_blinds(state0)
 game.play()
 
-print('\n')
-print("Hand " + str(1) + ": ", end = "")
+#print("Hand " + str(1) + ": ", end = "")
 game.isRoyal(game.hands[0])
 print('\n')
 
@@ -71,6 +71,7 @@ sortedHand = sorted(game.hands[1], reverse = True)
 hand = ''
 for card in sortedHand:
     hand = hand + str(card) + ' '
-print('Hand ' + str(2) + ': ' + hand + ' score: ' + str(game.point(sortedHand)) + '\n')
+print('Hand ' + str(2) + ': ' + hand + ' score: ' + str(game.point(sortedHand)))
 game.isRoyal(game.hands[1])
+print('\n')
 print(game.points_values(state))
