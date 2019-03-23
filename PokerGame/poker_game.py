@@ -98,7 +98,7 @@ class Poker (object):
       hand = ''
       for card in sortedHand:
         hand = hand + str(card) + ' '
-      print ('Hand ' + str(i + 1) + ': ' + hand + ' score: ' + str(self.point(sortedHand)))
+      print ('Hand ' + str(i + 1) + ': ' + hand)
 
   def point(self,hand):                         #point()function to calculate partial score
     sortedHand=sorted(hand,reverse=True)
@@ -151,15 +151,16 @@ class Poker (object):
     sortedHand=sorted(hand,reverse=True)
     flag=True
     r = 800000 #Value of hand type
-    h = self.point(sortedHand) #Value of hand ranks
-	k = 0
+    h = 0 #Value of hand ranks
+    k = 0
     Currank=sortedHand[1].rank               #since it has 4 identical ranks,the 2nd one in the sorted listmust be the identical rank
     count=0
     for card in sortedHand:
       if card.rank==Currank:
         count+=1
+        h += 2**(card.rank)
       else:
-	    k = card.rank/2
+        k = card.rank/2
     if count==4:
       flag=True
       print('Four of a Kind')
@@ -230,15 +231,15 @@ class Poker (object):
     flag=True
     r = 400000 #Value of hand type
     h = 0 #Value of hand ranks
-	k = 0
+    k = 0
     Currank=sortedHand[2].rank                    #In a sorted rank, the middle one should have 3 counts if flag=True
     mylist=[]
     for card in sortedHand:
       mylist.append(card.rank)
-	  if card.rank != Currank:    ################################################################# TJ LOOK OVER HERE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	    k += (card.rank)/10
-	  else:
-	    h += 2**(card.rank)     ################################################################# TJ LOOK OVER HERE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      if card.rank != Currank:    ################################################################# TJ LOOK OVER HERE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        k += (card.rank)/10
+      else:
+        h += 2**(card.rank)     ################################################################# TJ LOOK OVER HERE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if mylist.count(Currank)==3:
       flag=True
       print ("Three of a Kind")
@@ -252,15 +253,17 @@ class Poker (object):
     sortedHand=sorted(hand,reverse=True)
     flag=True
     r = 300000 #Value of hand type
-    h = self.point(sortedHand) #Value of hand ranks
-	k = 0
+    h = 0 #Value of hand ranks
+    k = 0
     rank1=sortedHand[1].rank                        #in a five cards sorted group, if isTwo(), the 2nd and 4th card should have another identical rank
     rank2=sortedHand[3].rank
     mylist=[]
     for card in sortedHand:
       mylist.append(card.rank)
-	  if card.rank !=rank1 || card.rank !=rank2:
-	    k += (card.rank)/10
+      if card.rank !=rank1 and card.rank !=rank2:
+        k += (card.rank)/10
+      else:
+        h += 2**(card.rank)
     if mylist.count(rank1)==2 and mylist.count(rank2)==2:
       flag=True
       print ("Two Pair")
@@ -274,8 +277,8 @@ class Poker (object):
     sortedHand=sorted(hand,reverse=True)
     flag=True
     r = 200000 #Value of hand type
-    h = self.point(sortedHand) #Value of hand ranks
-	k = 0
+    h = 0 #Value of hand ranks
+    k = 0
     mylist=[]                                       #create an empty list to store ranks
     mycount=[]                                      #create an empty list to store number of count of each rank
     for card in sortedHand:							#Create list of card ranks (myList)
@@ -283,9 +286,11 @@ class Poker (object):
     for each in mylist:								#Create list of counts of each rank (mycount)
       count=mylist.count(each)
       mycount.append(count)
-	for each in myList:
-	  if mylist.count(each) != 2:
-	    k += each/10
+      if mylist.count(each) != 2:
+        k += (each/10)
+      else:
+        h += 2**(each)
+		
     if mycount.count(2)==2 and mycount.count(1)==3:  #There should be only 2 identical numbers and the rest are all different
       flag=True
       print ("One Pair")
@@ -304,7 +309,7 @@ class Poker (object):
     for card in sortedHand:
       mylist.append(card.rank)
     print ("High Card")
-    self.tlist.append(r+h+k)
+    self.tlist.append(r+h)
     
 def main ():
   numHands = eval (input ('Enter number of hands to play: '))
@@ -316,8 +321,9 @@ def main ():
   print('\n')
   for i in range(numHands):
     curHand=game.hands[i]
-    print ("Hand "+ str(i+1) + ": " , end="")
+    print ("Hand "+ str(i+1) + ": ", end="")
     game.isRoyal(curHand)
+    print ("Score is " + str(game.tlist[i]))
 
   maxpoint=max(game.tlist)
   maxindex=game.tlist.index(maxpoint)
