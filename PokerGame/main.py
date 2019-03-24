@@ -29,12 +29,12 @@ players = dict(
 numHands = 2
 game = FiveCardDrawPoker(numHands, 50)
 state0 = game.starting_state()
-state0 = game.collect_blinds(state0)
-game.play()
+#state0 = game.collect_blinds(state0)
+#game.play()
 
 #print("Hand " + str(1) + ": ", end = "")
-game.isRoyal(game.hands[0])
-print('\n')
+#game.isRoyal(game.hands[0])
+#print('\n')
 
 if len(argv) != 3:
     print("Need two player arguments")
@@ -54,24 +54,55 @@ player2 = players[p2]
 state = state0
 last_action = None
 current_player = player1
+player_chips = [chips[0] for chips in state[:2]]
 
-while not game.is_ended(state):
-    print(game.display(state))
-    print("Player " + str(game.current_player(state)))
-    last_action = current_player(game, state)
-    state = game.next_state(state, last_action)
+while (not True in [chips < 2 for chips in player_chips]):
+    game.play()
+    game.isRoyal(game.hands[0])
+    print('\n')
+    state = game.collect_blinds(state)
+    while not game.is_ended(state):
+        print(game.display(state))
+        print("Player " + str(game.current_player(state)))
+        last_action = current_player(game, state)
+        state = game.next_state(state, last_action)
 
+        if current_player == player2:
+            current_player = player1
+        else:
+            current_player = player2
+
+    player_chips = [chips[0] for chips in state[:2]]
+
+    print("Round Finished!\n")
+    sortedHand = sorted(game.hands[1], reverse = True)
+    hand = ''
+    for card in sortedHand:
+        hand = hand + str(card) + ' '
+    print('Hand ' + str(2) + ': ' + hand + ' score: ' + str(game.point(sortedHand)))
+    game.isRoyal(game.hands[1])
+    print('\n')
+
+    if last_action == "fold":
+        points = game.points_values(state)
+
+        if current_player == player1:
+            points[1] = abs(points[1])
+            points[2] = -abs(points[2])
+            print(points, '\n')
+            state = game.distribute_winning(state, 1)
+        else:
+            points[1] = -abs(points[1])
+            points[2] = abs(points[2])
+            print(points, '\n')
+            state = game.distribute_winning(state, 2)
+    else:
+        points = game.points_values(state)
+        print(points, '\n')
+        if points[1] > 0:
+            state = game.distribute_winning(state, 1)
+        else:
+            state = game.distribute_winning(state, 2)
+            
     if current_player == player2:
         current_player = player1
-    else:
-        current_player = player2
-
-print("Finished!\n")
-sortedHand = sorted(game.hands[1], reverse = True)
-hand = ''
-for card in sortedHand:
-    hand = hand + str(card) + ' '
-print('Hand ' + str(2) + ': ' + hand + ' score: ' + str(game.point(sortedHand)))
-game.isRoyal(game.hands[1])
-print('\n')
-print(game.points_values(state))

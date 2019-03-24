@@ -14,6 +14,8 @@
 
 #  Date Last Modified:2/1/2013
 
+# https://github.com/annaymj/Python-Code/blob/master/Poker.py?fbclid=IwAR1Qq2y3NI4P7toiGwyBphnKcn6V4y1SVxnnFwF3EZU30KU-_24dXeRxPcE
+
 import string, math, random
 
 class Card (object):
@@ -83,16 +85,19 @@ class Poker (object):
     self.deck.shuffle ()
     self.hands = []
     self.tlist=[]       #create a list to store total_point
-    numCards_in_Hand = 5
-
-    for i in range (numHands):
-      hand = []
-      for j in range (numCards_in_Hand):
-        hand.append (self.deck.deal())
-      self.hands.append (hand)
-  
+    self.numHands = numHands
+    self.numCards_in_Hand = 5  
 
   def play (self):
+    self.deck = Deck()
+    self.deck.shuffle()
+    self.hands = []
+    self.tlist = []
+    for i in range (self.numHands):
+      hand = []
+      for j in range (self.numCards_in_Hand):
+        hand.append (self.deck.deal())
+      self.hands.append (hand)
     for i in range (len (self.hands) ):
       sortedHand = sorted (self.hands[i], reverse = True)
       hand = ''
@@ -337,7 +342,7 @@ class FiveCardDrawPoker(Poker):
             well as if it's Turn 0, if the bets are uneven, the player to
             take their turn, and if the betting phase is ended.
         """
-        return (self.buy_in, 0), (self.buy_in, 0), (0, False, False, 1)
+        return (self.buy_in, 0), (self.buy_in, 0), (0, False, True, 1)
 
     def get_player(self, state, player):
         return state[player - 1]
@@ -384,7 +389,7 @@ class FiveCardDrawPoker(Poker):
         stats = self.get_player(state, 3)
 
         # Check if the current turn is Turn 0 #
-        if stats[0] != 0:
+        if stats[2] == False:
             print("Cannot collect blinds! Round is not finished!\n")
             return player_one, player_two, stats
 
@@ -396,10 +401,10 @@ class FiveCardDrawPoker(Poker):
         new_bet_p2 = player_two[1] + self.big_blind
         player_two = (new_chips_p2, new_bet_p2)
 
-        turn_one = stats[0] + 1
+        turn_one = 1
         is_uneven = True
         is_ended = False
-        stats = (turn_one, is_uneven, is_ended, stats[-1])
+        stats = (turn_one, is_uneven, is_ended, 1)
 
         return player_one, player_two, stats
 
@@ -478,7 +483,7 @@ class FiveCardDrawPoker(Poker):
 
         def fold_action():
             stats = self.get_player(state, 3)
-            new_stats = (stats[0] + 1, False, True, 3 - player)
+            new_stats = (stats[0] + 1, False, True, 3 - stats[3])
 
             return (state[0], state[1], new_stats)
 
@@ -515,11 +520,24 @@ class FiveCardDrawPoker(Poker):
         else:
             exit("Invalid player!")
 
+    def distribute_winning(self, state, winner):
+        player1 = self.get_player(state, 1)
+        player2 = self.get_player(state, 2)
+        new_stats = (0, False, True, 3 - winner)
+
+        if winner == 1:
+            player1 = (player1[0] + player1[1] + player2[1], 0)
+            player2 = (player2[0], 0)
+        else:
+            player2 = (player2[0] + player2[1] + player1[1], 0)
+            player1 = (player1[0], 0)
+
+        return (player1, player2, new_stats)
     
 def main ():
   numHands = eval (input ('Enter number of hands to play: '))
   while (numHands < 2 or numHands > 6):
-    numHands = eval( input ('Enter number of hands to play: ') )
+    numHands = eval( input ('Enter number of hands to play: '))
   game = Poker (numHands)
   game.play()  
 
@@ -539,7 +557,7 @@ def main ():
 def test():
     game = FiveCardDrawPoker(2, 50)
     state = game.starting_state()
-    assert state == ((50, 0), (50, 0), (0, False, False, 1)), "starting_state() fail!"
+    assert state == ((50, 0), (50, 0), (0, False, True, 1)), "starting_state() fail!"
     print("starting_state() pass!")
 
     uneven_state = game.collect_blinds(state)
@@ -598,7 +616,7 @@ def test():
     ended = game.is_ended(new_state)
     assert ended == True
 
-    print("All tests pass!")
+    print("All tests pass!\n")
 
 
 #main()
