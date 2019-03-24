@@ -30,6 +30,7 @@ def expand_leaf(node, game, state):
         Returns an added child node.
     """
     action = choice(node.untried_actions)
+
     state = game.next_state(state,action)
     node.untried_actions.remove(action)
     new_leaf = MCTSNode(node, action, game.legal_actions(state))
@@ -82,7 +83,11 @@ def backpropagate(node, won):
 
     while node != None:
         node.visits += 1
-        node.wins += won
+        #node.wins += won
+        if node.wins > 0:
+            node.wins += 1
+        else:
+            node.wins -= 1
         node = node.parent
 
 

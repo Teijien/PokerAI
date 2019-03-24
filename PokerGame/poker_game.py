@@ -87,6 +87,10 @@ class Poker (object):
     self.numCards_in_Hand = 5  
 
   def play (self):
+    self.deck = Deck()
+    self.deck.shuffle()
+    self.hands = []
+    self.tlist = []
     for i in range (self.numHands):
       hand = []
       for j in range (self.numCards_in_Hand):
@@ -387,27 +391,18 @@ class FiveCardDrawPoker(Poker):
             print("Cannot collect blinds! Round is not finished!\n")
             return player_one, player_two, stats
 
-        if stats[-1] == 1:
-            new_chips_p1 = player_one[0] - self.small_blind
-            new_bet_p1 = player_one[1] + self.small_blind
-            player_one = (new_chips_p1, new_bet_p1)
+        new_chips_p1 = player_one[0] - self.small_blind
+        new_bet_p1 = player_one[1] + self.small_blind
+        player_one = (new_chips_p1, new_bet_p1)
 
-            new_chips_p2 = player_two[0] - self.big_blind
-            new_bet_p2 = player_two[1] + self.big_blind
-            player_two = (new_chips_p2, new_bet_p2)
-        else:
-            new_chips_p1 = player_one[0] - self.big_blind
-            new_bet_p1 = player_one[1] + self.big_blind
-            player_one = (new_chips_p1, new_bet_p1)
+        new_chips_p2 = player_two[0] - self.big_blind
+        new_bet_p2 = player_two[1] + self.big_blind
+        player_two = (new_chips_p2, new_bet_p2)
 
-            new_chips_p2 = player_two[0] - self.small_blind
-            new_bet_p2 = player_two[1] + self.small_blind
-            player_two = (new_chips_p2, new_bet_p2)
-
-        turn_one = stats[0] + 1
+        turn_one = 1
         is_uneven = True
         is_ended = False
-        stats = (turn_one, is_uneven, is_ended, stats[-1])
+        stats = (turn_one, is_uneven, is_ended, 1)
 
         return player_one, player_two, stats
 
@@ -532,15 +527,15 @@ class FiveCardDrawPoker(Poker):
             player1 = (player1[0] + player1[1] + player2[1], 0)
             player2 = (player2[0], 0)
         else:
-            player1 = (player[0], 0)
             player2 = (player2[0] + player2[1] + player1[1], 0)
+            player1 = (player1[0], 0)
 
         return (player1, player2, new_stats)
     
 def main ():
   numHands = eval (input ('Enter number of hands to play: '))
   while (numHands < 2 or numHands > 6):
-    numHands = eval( input ('Enter number of hands to play: ') )
+    numHands = eval( input ('Enter number of hands to play: '))
   game = Poker (numHands)
   game.play()  
 

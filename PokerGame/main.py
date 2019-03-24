@@ -34,7 +34,7 @@ state0 = game.starting_state()
 
 #print("Hand " + str(1) + ": ", end = "")
 #game.isRoyal(game.hands[0])
-print('\n')
+#print('\n')
 
 if len(argv) != 3:
     print("Need two player arguments")
@@ -59,6 +59,7 @@ player_chips = [chips[0] for chips in state[:2]]
 while (not True in [chips < 2 for chips in player_chips]):
     game.play()
     game.isRoyal(game.hands[0])
+    print('\n')
     state = game.collect_blinds(state)
     while not game.is_ended(state):
         print(game.display(state))
@@ -81,22 +82,27 @@ while (not True in [chips < 2 for chips in player_chips]):
     print('Hand ' + str(2) + ': ' + hand + ' score: ' + str(game.point(sortedHand)))
     game.isRoyal(game.hands[1])
     print('\n')
+
     if last_action == "fold":
         points = game.points_values(state)
+
         if current_player == player1:
             points[1] = abs(points[1])
             points[2] = -abs(points[2])
-            print(points)
+            print(points, '\n')
             state = game.distribute_winning(state, 1)
         else:
             points[1] = -abs(points[1])
             points[2] = abs(points[2])
-            print(points)
+            print(points, '\n')
             state = game.distribute_winning(state, 2)
     else:
         points = game.points_values(state)
-        print(points)
+        print(points, '\n')
         if points[1] > 0:
             state = game.distribute_winning(state, 1)
         else:
             state = game.distribute_winning(state, 2)
+            
+    if current_player == player2:
+        current_player = player1
