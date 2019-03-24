@@ -1,6 +1,7 @@
 from mcts_node import MCTSNode
 from random import choice
 from math import sqrt, log
+import copy
 
 num_nodes = 1000
 explore_factor = 2
@@ -29,6 +30,7 @@ def expand_leaf(node, game, state):
         Returns an added child node.
     """
     action = choice(node.untried_actions)
+
     state = game.next_state(state,action)
     node.untried_actions.remove(action)
     new_leaf = MCTSNode(node, action, game.legal_actions(state))
@@ -37,16 +39,40 @@ def expand_leaf(node, game, state):
     return new_leaf
 
 
-def rollout(game, state):
+def rollout(game, state, identity_of_bot):
     """ Given the state of the game, the rollout plays out the remainder
     
         Returns the result of the game.
     """
+    sample_game = copy.deepcopy(game)
+    next_move = ''
     while not game.is_ended(state):
-        next_move = choice(game.legal_actions(state))
+        legal_actions = game.legal_actions(state)
+        if "check" in legal_actions:
+            legal_actions.remove("fold")
+        #next_move = choice(game.legal_actions(state))
+        next_move = choice(legal_actions)
         state = game.next_state(state,next_move)
-    
-    game_points = game.points_values(state)
+
+    opponent = identity_of_bot
+    random_hand = []
+    for i in range(5):
+        random_hand.append(sample_game.deck.deal())
+    sample_game.hands[opponent - 1] = random_hand
+
+    game_points = {}
+    if next_move == "fold":
+        points = sample_game.points_values(state)
+        if sample_game.current_player(state) == 1:
+            points[1] = abs(points[1])
+            points[2] = -abs(points[2])
+            game_points = points
+        else:
+            points[1] = -abs(points[1])
+            points[2] = abs(points[2])
+            game_points = points
+    else:
+        game_points = sample_game.points_values(state)
     return game_points
 
 
@@ -57,7 +83,11 @@ def backpropagate(node, won):
 
     while node != None:
         node.visits += 1
-        node.wins += won
+        #node.wins += won
+        if node.wins > 0:
+            node.wins += 1
+        else:
+            node.wins -= 1
         node = node.parent
 
 
@@ -67,9 +97,9 @@ def think(game, state):
 
         Returns the actions to be taken.
     """
-    print(game.display(state, None))
+    #print(game.display(state))
     identity_of_bot = game.current_player(state)
-    root_node = MCTSNode(parent=None, parent_action=None, action_list=gArithmeticError.legal_actions(state))
+    root_node = MCTSNode(parent=None, parent_action=None, action_list=game.legal_actions(state))
     
     for step in range(num_nodes):
         sampled_game = state    # Copy the game for sampling a playthrough
@@ -82,12 +112,13 @@ def think(game, state):
         if node.untried_actions != []:
             node = expand_leaf(node, game, sampled_game)
             sampled_game = game.next_state(sampled_game, node.parent_action)
+            #print(sampled_game)
 
-        points = rollout(game,sampled_game)
+        points = rollout(game,sampled_game, identity_of_bot)
         result = points[identity_of_bot]
         backpropagate(node, result)
 
-    choice = sorted(rroot_node.childnum_nodes.values(),
+    choice = sorted(root_node.child_nodes.values(),
                    key = lambda c: c.visits)[-1].parent_action
     print("MCTS bot ", identity_of_bot, " picking ", choice)
 

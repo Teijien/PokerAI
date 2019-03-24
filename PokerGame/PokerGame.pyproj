@@ -13,7 +13,7 @@
     <Name>PokerGame</Name>
     <RootNamespace>PokerGame</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>human human</CommandLineArguments>
+    <CommandLineArguments>human mcts_bot</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
