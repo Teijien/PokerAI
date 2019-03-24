@@ -67,13 +67,15 @@ def think(game, state):
 
         Returns the actions to be taken.
     """
-    print(game.display(state))
+    #print(game.display(state))
     identity_of_bot = game.current_player(state)
     root_node = MCTSNode(parent=None, parent_action=None, action_list=game.legal_actions(state))
     
     for step in range(num_nodes):
         sampled_game = state    # Copy the game for sampling a playthrough
         node = root_node    # Start at root
+
+        print
 
         while node.untried_actions == [] and node.child_nodes != {}:
             node = traverse_nodes(node, game, sampled_game, identity_of_bot)
@@ -82,6 +84,7 @@ def think(game, state):
         if node.untried_actions != []:
             node = expand_leaf(node, game, sampled_game)
             sampled_game = game.next_state(sampled_game, node.parent_action)
+            print(sampled_game)
 
         points = rollout(game,sampled_game)
         result = points[identity_of_bot]

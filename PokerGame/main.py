@@ -74,4 +74,15 @@ for card in sortedHand:
 print('Hand ' + str(2) + ': ' + hand + ' score: ' + str(game.point(sortedHand)))
 game.isRoyal(game.hands[1])
 print('\n')
-print(game.points_values(state))
+if last_action == "fold":
+    points = game.points_values(state)
+    if current_player == player1:
+        points[1] = abs(points[1])
+        points[2] = -abs(points[2])
+        print(points)
+    else:
+        points[1] = -abs(points[1])
+        points[2] = abs(points[2])
+        print(points)
+else:
+    print(game.points_values(state))
